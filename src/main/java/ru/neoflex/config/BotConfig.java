@@ -1,21 +1,18 @@
 package ru.neoflex.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class BotConfig {
-    @Value("${bot.name}")
-    private String botName;
 
-    @Value("${bot.token}")
-    private String token;
+    private final Dotenv dotenv = Dotenv.load();
 
     public String getBotName() {
-        return botName;
+        return dotenv.get("BOT_NAME");
     }
 
     public String getToken() {
-        return token;
+        return dotenv.get("BOT_TOKEN");
     }
 }
