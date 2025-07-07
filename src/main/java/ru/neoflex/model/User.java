@@ -21,7 +21,7 @@ public class User {
     private Boolean profileComplete;
 
     @Column(nullable = false)
-    private String onboardingStep;
+    private OnboardingStep onboardingStep;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private CalculatorProfile calculatorProfile;

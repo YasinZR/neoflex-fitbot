@@ -12,7 +12,7 @@ import java.util.List;
 public class MainMenuHandler {
 
     public SendMessage createMainMenu(long chatId, String userName) {
-        String text = "Привет, " + userName + "! Я твой персональный помощник по здоровью и спорту.\n" +
+        String text = userName + "! Я твой персональный помощник по здоровью и спорту.\n" +
                 "Выбери, что тебя интересует:";
 
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
