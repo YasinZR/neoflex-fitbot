@@ -23,7 +23,7 @@ public class NeoflexFitBot extends TelegramLongPollingBot {
         this.config = config;
         this.textMessageHandler = textMessageHandler;
         this.callbackQueryHandler = callbackQueryHandler;
-        BotResponseUtils.init(this); // ← инициализируем для executeSafe
+        BotResponseUtils.init(this);
     }
 
     @Override

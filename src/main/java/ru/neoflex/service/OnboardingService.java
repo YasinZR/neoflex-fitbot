@@ -1,6 +1,6 @@
 package ru.neoflex.service;
 
-import ru.neoflex.model.OnboardingStep;
+import ru.neoflex.model.enums.OnboardingStep;
 import ru.neoflex.model.User;
 
 public interface OnboardingService {

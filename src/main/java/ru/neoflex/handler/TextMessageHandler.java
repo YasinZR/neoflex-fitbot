@@ -4,11 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import ru.neoflex.model.OnboardingStep;
+import ru.neoflex.model.enums.OnboardingStep;
 import ru.neoflex.model.User;
 import ru.neoflex.service.OnboardingService;
 
-import static ru.neoflex.util.BotResponseUtils.executeSafe;
+import static ru.neoflex.util.BotResponseUtils.*;
 
 @Component
 @RequiredArgsConstructor
@@ -24,13 +24,7 @@ public class TextMessageHandler {
         String userName = update.getMessage().getFrom().getFirstName();
 
         if (messageText.equals("/start")) {
-            onboardingService.startOnboarding(chatId);
-            SendMessage welcome = SendMessage.builder()
-                    .chatId(String.valueOf(chatId))
-                    .text("Привет, " + userName + "! Давай настроим твой профиль. Начнём с пола:")
-                    .replyMarkup(onboardingStepHandler.genderKeyboard())
-                    .build();
-            executeSafe(welcome);
+            handleStartCommand(chatId, userName);
             return;
         }
 
@@ -38,35 +32,47 @@ public class TextMessageHandler {
         OnboardingStep step = user.getOnboardingStep();
 
         if (step == OnboardingStep.CUSTOM_WEIGHT) {
-            try {
-                onboardingService.saveWeight(chatId, messageText);
-                onboardingService.saveOnboardingStep(chatId, OnboardingStep.HEIGHT);
-                executeSafe(SendMessage.builder()
-                        .chatId(String.valueOf(chatId))
-                        .text("Теперь укажи рост относительно среднего (175 см):")
-                        .replyMarkup(onboardingStepHandler.heightKeyboard())
-                        .build());
-            } catch (NumberFormatException e) {
-                executeSafe(SendMessage.builder()
-                        .chatId(String.valueOf(chatId))
-                        .text("Некорректный формат. Введите вес числом, например: 73")
-                        .build());
-            }
+            handleCustomWeight(chatId, messageText);
         } else if (step == OnboardingStep.CUSTOM_HEIGHT) {
-            try {
-                onboardingService.saveHeight(chatId, messageText);
-                onboardingService.saveOnboardingStep(chatId, OnboardingStep.ACTIVITY_LEVEL);
-                executeSafe(SendMessage.builder()
-                        .chatId(String.valueOf(chatId))
-                        .text("Выбери уровень активности:")
-                        .replyMarkup(onboardingStepHandler.activityLevelKeyboard())
-                        .build());
-            } catch (NumberFormatException e) {
-                executeSafe(SendMessage.builder()
-                        .chatId(String.valueOf(chatId))
-                        .text("Некорректный формат. Введите рост числом, например: 178")
-                        .build());
-            }
+            handleCustomHeight(chatId, messageText);
+        }
+    }
+
+    private void handleStartCommand(long chatId, String userName) {
+        onboardingService.startOnboarding(chatId);
+        sendTextWithKeyboard(
+                chatId,
+                "Привет, " + userName + "! Давай настроим твой профиль. Начнём с пола:",
+                onboardingStepHandler.genderKeyboard()
+        );
+    }
+
+    private void handleCustomWeight(long chatId, String messageText) {
+        try {
+            onboardingService.saveWeight(chatId, messageText);
+            onboardingService.saveOnboardingStep(chatId, OnboardingStep.HEIGHT);
+            sendTextWithKeyboard(
+                    chatId,
+                    "Теперь укажи рост относительно среднего (175 см):",
+                    onboardingStepHandler.heightKeyboard()
+            );
+        } catch (NumberFormatException e) {
+            sendText(chatId,"Некорректный формат. Введите вес числом, например: 73");
+        }
+    }
+
+    private void handleCustomHeight(long chatId, String messageText) {
+        try {
+            onboardingService.saveHeight(chatId, messageText);
+            onboardingService.saveOnboardingStep(chatId, OnboardingStep.ACTIVITY_LEVEL);
+            sendTextWithKeyboard(
+                    chatId,
+                    "Выбери уровень активности:",
+                    onboardingStepHandler.activityLevelKeyboard()
+
+            );
+        } catch (NumberFormatException e) {
+            sendText(chatId,"Некорректный формат. Введите рост числом, например: 178");
         }
     }
 }

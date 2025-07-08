@@ -3,6 +3,9 @@ package ru.neoflex.handler;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import ru.neoflex.model.enums.AgeOption;
+import ru.neoflex.model.enums.ActivityLevelOption;
+
 
 import java.util.List;
 
@@ -10,57 +13,69 @@ import java.util.List;
 public class OnboardingStepHandler {
 
     public InlineKeyboardMarkup genderKeyboard() {
-        return InlineKeyboardMarkup.builder().keyboard(List.of(
-                List.of(
-                        InlineKeyboardButton.builder().text("Мужской").callbackData("gender_male").build(),
-                        InlineKeyboardButton.builder().text("Женский").callbackData("gender_female").build()
-                )
-        )).build();
+        return createKeyboard(List.of(
+                List.of(new ButtonData("Мужской", "gender_male"),
+                        new ButtonData("Женский", "gender_female"))
+        ));
     }
 
     public InlineKeyboardMarkup ageKeyboard() {
-        return InlineKeyboardMarkup.builder().keyboard(List.of(
-                List.of(InlineKeyboardButton.builder().text("18–25").callbackData("age_18").build()),
-                List.of(InlineKeyboardButton.builder().text("26–35").callbackData("age_26").build()),
-                List.of(InlineKeyboardButton.builder().text("36–45").callbackData("age_36").build()),
-                List.of(InlineKeyboardButton.builder().text("46+").callbackData("age_46").build())
-        )).build();
+        return createKeyboard(
+                List.of(AgeOption.values()).stream()
+                        .map(opt -> List.of(new ButtonData(opt.getText(), opt.getCallback())))
+                        .toList()
+        );
     }
 
     public InlineKeyboardMarkup activityLevelKeyboard() {
-        return InlineKeyboardMarkup.builder().keyboard(List.of(
-                List.of(InlineKeyboardButton.builder().text("Низкий").callbackData("activity_low").build()),
-                List.of(InlineKeyboardButton.builder().text("Средний").callbackData("activity_medium").build()),
-                List.of(InlineKeyboardButton.builder().text("Высокий").callbackData("activity_high").build()),
-                List.of(InlineKeyboardButton.builder().text("🏃 Профи").callbackData("activity_pro").build())
-        )).build();
+        return createKeyboard(
+                List.of(ActivityLevelOption.values()).stream()
+                        .map(opt -> List.of(new ButtonData(opt.getText(), opt.getCallback())))
+                        .toList()
+        );
     }
 
     public InlineKeyboardMarkup goalKeyboard() {
-        return InlineKeyboardMarkup.builder().keyboard(List.of(
-                List.of(InlineKeyboardButton.builder().text("Похудеть").callbackData("goal_lose").build()),
-                List.of(InlineKeyboardButton.builder().text("Поддерживать").callbackData("goal_maintain").build()),
-                List.of(InlineKeyboardButton.builder().text("Набрать").callbackData("goal_gain").build())
-        )).build();
+        return createKeyboard(List.of(
+                List.of(new ButtonData("Похудеть", "goal_lose")),
+                List.of(new ButtonData("Поддерживать", "goal_maintain")),
+                List.of(new ButtonData("Набрать", "goal_gain"))
+        ));
     }
+
     public InlineKeyboardMarkup weightKeyboard() {
-        return InlineKeyboardMarkup.builder().keyboard(List.of(
+        return createKeyboard(List.of(
                 List.of(
-                        InlineKeyboardButton.builder().text("−5").callbackData("weight_minus5").build(),
-                        InlineKeyboardButton.builder().text("+5").callbackData("weight_plus5").build(),
-                        InlineKeyboardButton.builder().text("Другая…").callbackData("weight_custom").build()
+                        new ButtonData("−5", "weight_minus5"),
+                        new ButtonData("+5", "weight_plus5"),
+                        new ButtonData("Другая…", "weight_custom")
                 )
-        )).build();
+        ));
     }
 
     public InlineKeyboardMarkup heightKeyboard() {
-        return InlineKeyboardMarkup.builder().keyboard(List.of(
+        return createKeyboard(List.of(
                 List.of(
-                        InlineKeyboardButton.builder().text("−5").callbackData("height_minus5").build(),
-                        InlineKeyboardButton.builder().text("+5").callbackData("height_plus5").build(),
-                        InlineKeyboardButton.builder().text("Другая…").callbackData("height_custom").build()
+                        new ButtonData("−5", "height_minus5"),
+                        new ButtonData("+5", "height_plus5"),
+                        new ButtonData("Другая…", "height_custom")
                 )
-        )).build();
+        ));
     }
 
+    // Универсальный генератор клавиатур
+    private InlineKeyboardMarkup createKeyboard(List<List<ButtonData>> buttonLayout) {
+        List<List<InlineKeyboardButton>> keyboard = buttonLayout.stream()
+                .map(row -> row.stream()
+                        .map(btn -> InlineKeyboardButton.builder()
+                                .text(btn.text())
+                                .callbackData(btn.callbackData())
+                                .build())
+                        .toList())
+                .toList();
+        return InlineKeyboardMarkup.builder().keyboard(keyboard).build();
+    }
+
+    // Простая структура данных для кнопок
+    private record ButtonData(String text, String callbackData) {}
 }

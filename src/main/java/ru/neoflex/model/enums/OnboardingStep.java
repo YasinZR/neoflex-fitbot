@@ -1,4 +1,4 @@
-package ru.neoflex.model;
+package ru.neoflex.model.enums;
 
 public enum OnboardingStep {
     GENDER,

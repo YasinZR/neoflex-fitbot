@@ -2,6 +2,7 @@ package ru.neoflex.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ru.neoflex.model.enums.OnboardingStep;
 
 @Entity
 @Table(name = "users")
