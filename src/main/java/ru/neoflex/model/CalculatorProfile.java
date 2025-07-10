@@ -18,21 +18,21 @@ public class CalculatorProfile {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @Column(nullable = false)
+    @Column
     private String gender;
 
-    @Column(nullable = false)
+    @Column
     private Integer age;
 
-    @Column(nullable = false)
+    @Column
     private Double weight;
 
-    @Column(nullable = false)
+    @Column
     private Double height;
 
-    @Column(nullable = false)
+    @Column
     private String activityLevel;
 
-    @Column(nullable = false)
+    @Column
     private String goal;
 }

@@ -2,6 +2,7 @@ package ru.neoflex.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ru.neoflex.model.enums.OnboardingStep;
 
 @Entity
 @Table(name = "users")
@@ -21,7 +22,7 @@ public class User {
     private Boolean profileComplete;
 
     @Column(nullable = false)
-    private String onboardingStep;
+    private OnboardingStep onboardingStep;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private CalculatorProfile calculatorProfile;

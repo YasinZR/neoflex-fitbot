@@ -1,46 +1,37 @@
 package ru.neoflex;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.neoflex.config.BotConfig;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ru.neoflex.handler.MainMenuHandler;
+import ru.neoflex.config.BotConfig;
+import ru.neoflex.handler.CallbackQueryHandler;
+import ru.neoflex.handler.TextMessageHandler;
+import ru.neoflex.util.BotResponseUtils;
 
+@Slf4j
 @Component
 public class NeoflexFitBot extends TelegramLongPollingBot {
 
-    private static final Logger log = LoggerFactory.getLogger(NeoflexFitBot.class);
     private final BotConfig config;
-    private final MainMenuHandler mainMenuHandler;
+    private final TextMessageHandler textMessageHandler;
+    private final CallbackQueryHandler callbackQueryHandler;
 
-    public NeoflexFitBot(BotConfig config, MainMenuHandler mainMenuHandler) {
+    public NeoflexFitBot(BotConfig config,
+                         TextMessageHandler textMessageHandler,
+                         CallbackQueryHandler callbackQueryHandler) {
         this.config = config;
-        this.mainMenuHandler = mainMenuHandler;
+        this.textMessageHandler = textMessageHandler;
+        this.callbackQueryHandler = callbackQueryHandler;
+        BotResponseUtils.init(this);
     }
 
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            String messageText = update.getMessage().getText();
-            long chatId = update.getMessage().getChatId();
-            String userName = update.getMessage().getFrom().getFirstName();
-
-            if (messageText.equals("/start")) {
-                SendMessage message = mainMenuHandler.createMainMenu(chatId, userName);
-                executeSafe(message);
-            }
-        }
-    }
-
-    private void executeSafe(SendMessage message) {
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            log.error("Error sending message", e);
+            textMessageHandler.handle(update);
+        } else if (update.hasCallbackQuery()) {
+            callbackQueryHandler.handle(update);
         }
     }
 
