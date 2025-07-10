@@ -4,8 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.neoflex.model.enums.OnboardingStep;
 import ru.neoflex.service.OnboardingService;
+import ru.neoflex.service.WorkoutService;
+
+import java.util.List;
 
 import static ru.neoflex.util.BotResponseUtils.*;
 
@@ -16,11 +21,52 @@ public class CallbackQueryHandler {
     private final OnboardingStepHandler onboardingStepHandler;
     private final MainMenuHandler mainMenuHandler;
     private final OnboardingService onboardingService;
+    private final WorkoutService workoutService;
+    private final WorkoutPaginationHandler workoutPaginationHandler;
+    private final WorkoutEditHandler workoutEditHandler;
+
 
     public void handle(Update update) {
         String data = update.getCallbackQuery().getData();
         long chatId = update.getCallbackQuery().getMessage().getChatId();
         String userName = update.getCallbackQuery().getFrom().getFirstName();
+
+        if (data.startsWith("edit_")) {
+            Long workoutId = Long.parseLong(data.replace("edit_", ""));
+            workoutEditHandler.handleEditRequest(update, workoutId);
+            return;
+        }
+
+
+        if (data.startsWith("delete_")) {
+            Long workoutId = Long.parseLong(data.replace("delete_", ""));
+            InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
+                    .keyboardRow(List.of(
+                            InlineKeyboardButton.builder().text("✅ Подтвердить").callbackData("confirm_delete_" + workoutId).build(),
+                            InlineKeyboardButton.builder().text("❌ Отмена").callbackData("cancel_delete").build()
+                    ))
+                    .build();
+
+            executeSafe(SendMessage.builder()
+                    .chatId(String.valueOf(chatId))
+                    .text("Ты точно хочешь удалить эту тренировку?")
+                    .replyMarkup(markup)
+                    .build());
+            return;
+        }
+
+        if (data.startsWith("confirm_delete_")) {
+            Long workoutId = Long.parseLong(data.replace("confirm_delete_", ""));
+            workoutService.deleteWorkout(workoutId);
+            sendText(chatId, "✅ Тренировка удалена.");
+            return;
+        }
+
+        if (data.equals("cancel_delete")) {
+            sendText(chatId, "❌ Удаление отменено.");
+            return;
+        }
+
 
         if (data.startsWith("gender_")) {
             handleGenderCallback(chatId, data);
@@ -35,6 +81,11 @@ public class CallbackQueryHandler {
         } else if (data.startsWith("goal_")) {
             handleGoalCallback(chatId, data, userName);
         }
+        if (data.startsWith("page_")) {
+            int page = Integer.parseInt(data.replace("page_", ""));
+            workoutPaginationHandler.handleListCommand(update, page);
+        }
+
     }
 
     private void handleGenderCallback(long chatId, String data) {
