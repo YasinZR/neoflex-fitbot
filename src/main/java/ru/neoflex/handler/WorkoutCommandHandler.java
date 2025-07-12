@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.neoflex.model.User;
 import ru.neoflex.model.WorkoutLog;
-import ru.neoflex.model.enums.OnboardingStep;
 import ru.neoflex.service.OnboardingService;
 import ru.neoflex.service.WorkoutService;
 
@@ -35,43 +34,48 @@ public class WorkoutCommandHandler {
         long chatId = update.getMessage().getChatId();
         String text = update.getMessage().getText();
 
-        if (!workoutBuffer.containsKey(chatId)) return; // если нет в процессе — игнорим
-
         PartialWorkout buffer = workoutBuffer.get(chatId);
+        if (buffer == null) return;
 
-        if (buffer.getType() == null) {
-            buffer.setType(text);
-            sendText(chatId, "Укажи продолжительность в минутах:");
-        } else if (buffer.getDurationMin() == null) {
-            try {
-                buffer.setDurationMin(Integer.parseInt(text));
-                sendText(chatId, "Сколько калорий сожжено?");
-            } catch (NumberFormatException e) {
-                sendText(chatId, "Неверный формат. Введите число, например: 45");
+        switch (buffer.getCurrentStep()) {
+            case TYPE -> {
+                buffer.setType(text);
+                buffer.setCurrentStep(PartialWorkout.InputStep.DURATION);
+                sendText(chatId, "Укажи продолжительность в минутах:");
             }
-        } else if (buffer.getCalories() == null) {
-            try {
-                buffer.setCalories(Integer.parseInt(text));
-                User user = onboardingService.getUserByTelegramId(chatId);
+            case DURATION -> {
+                try {
+                    buffer.setDurationMin(Integer.parseInt(text));
+                    buffer.setCurrentStep(PartialWorkout.InputStep.CALORIES);
+                    sendText(chatId, "Сколько калорий сожжено?");
+                } catch (NumberFormatException e) {
+                    sendText(chatId, "Неверный формат. Введите число, например: 45");
+                }
+            }
+            case CALORIES -> {
+                try {
+                    buffer.setCalories(Integer.parseInt(text));
+                    User user = onboardingService.getUserByTelegramId(chatId);
 
-                WorkoutLog workout = WorkoutLog.builder()
-                        .user(user)
-                        .type(buffer.getType())
-                        .durationMin(buffer.getDurationMin())
-                        .calories(buffer.getCalories())
-                        .timestamp(LocalDateTime.now())
-                        .build();
+                    WorkoutLog workout = WorkoutLog.builder()
+                            .user(user)
+                            .type(buffer.getType())
+                            .durationMin(buffer.getDurationMin())
+                            .calories(buffer.getCalories())
+                            .timestamp(LocalDateTime.now())
+                            .build();
 
-                workoutService.addWorkout(workout);
-                sendText(chatId, "Тренировка сохранена!");
+                    workoutService.addWorkout(workout);
+                    sendText(chatId, "Тренировка сохранена!");
 
-                // очищаем буфер
-                workoutBuffer.remove(chatId);
-            } catch (NumberFormatException e) {
-                sendText(chatId, "Неверный формат. Введите число, например: 300");
+                    workoutBuffer.remove(chatId);
+                } catch (NumberFormatException e) {
+                    sendText(chatId, "Неверный формат. Введите число, например: 300");
+                }
             }
         }
     }
+
 
     @RequiredArgsConstructor
     @Getter
@@ -80,5 +84,11 @@ public class WorkoutCommandHandler {
         private String type;
         private Integer durationMin;
         private Integer calories;
+        private InputStep currentStep = InputStep.TYPE;
+
+        enum InputStep {
+            TYPE, DURATION, CALORIES
+        }
+
     }
 }

@@ -7,6 +7,7 @@ import ru.neoflex.model.WorkoutLog;
 import ru.neoflex.repository.WorkoutLogRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +22,7 @@ public class WorkoutServiceImpl implements WorkoutService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkoutLog> listWorkouts(Long userId) {
         return workoutLogRepository.findAllByUserIdOrderByTimestampDesc(userId);
     }
@@ -38,10 +40,11 @@ public class WorkoutServiceImpl implements WorkoutService {
     }
 
     @Override
-    public WorkoutLog getWorkoutById(Long workoutId) {
-        return workoutLogRepository.findById(workoutId)
-                .orElseThrow(() -> new RuntimeException("Workout not found"));
+    @Transactional(readOnly = true)
+    public Optional<WorkoutLog> getWorkoutById(Long workoutId) {
+        return workoutLogRepository.findById(workoutId);
     }
+
 
 
 

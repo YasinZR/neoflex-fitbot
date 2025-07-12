@@ -7,6 +7,7 @@ import ru.neoflex.model.WorkoutLog;
 import ru.neoflex.service.WorkoutService;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static ru.neoflex.util.BotResponseUtils.sendText;
@@ -23,12 +24,13 @@ public class WorkoutEditHandler {
     public void handleEditRequest(Update update, Long workoutId) {
         long chatId = update.getCallbackQuery().getMessage().getChatId();
 
-        WorkoutLog workout = workoutService.getWorkoutById(workoutId);
-
-        if (workout == null) {
+        Optional<WorkoutLog> optionalWorkout = workoutService.getWorkoutById(workoutId);
+        if (optionalWorkout.isEmpty()) {
             sendText(chatId, "❌ Тренировка не найдена.");
             return;
         }
+        WorkoutLog workout = optionalWorkout.get();
+
 
         // сохраняем в буфер
         editBuffer.put(chatId, new EditingState(workoutId, workout, EditField.TYPE));
