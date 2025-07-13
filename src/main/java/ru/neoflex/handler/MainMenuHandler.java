@@ -11,25 +11,27 @@ import java.util.List;
 @Component
 public class MainMenuHandler {
 
-    public SendMessage createMainMenu(long chatId, String userName) {
-        String text = userName + "! Я твой персональный помощник по здоровью и спорту.\n" +
-                "Выбери, что тебя интересует:";
-
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-
-        rows.add(List.of(InlineKeyboardButton.builder().text("💪 Привычки").callbackData("habits").build()));
-        rows.add(List.of(InlineKeyboardButton.builder().text("🧮 БЖУ").callbackData("bju").build()));
-        rows.add(List.of(InlineKeyboardButton.builder().text("💧 Вода").callbackData("water").build()));
-        rows.add(List.of(InlineKeyboardButton.builder().text("📊 Статистика").callbackData("stats").build()));
-        rows.add(List.of(InlineKeyboardButton.builder().text("⚙️ Настройки").callbackData("settings").build()));
-
-        markup.setKeyboard(rows);
+    public SendMessage createMainMenu(long chatId, String name) {
+        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        List.of(
+                                InlineKeyboardButton.builder().text("🏋️‍♂️ Тренировки").callbackData("workout_menu").build()
+                        ),
+                        List.of(
+                                InlineKeyboardButton.builder().text("🍽 Питание").callbackData("nutrition_menu").build()
+                        ),
+                        List.of(
+                                InlineKeyboardButton.builder().text("💧 Вода").callbackData("WATER_MENU").build()
+                        )
+                ))
+                .build();
 
         return SendMessage.builder()
                 .chatId(String.valueOf(chatId))
-                .text(text)
+                .text(name + "! Я твой персональный помощник по здоровью и спорту.\n" +
+                        "Выбери, что тебя интересует:")
                 .replyMarkup(markup)
                 .build();
     }
+
 }

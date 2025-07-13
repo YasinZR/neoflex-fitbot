@@ -6,16 +6,10 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import ru.neoflex.model.NutritionEntry;
 import ru.neoflex.model.enums.OnboardingStep;
 import ru.neoflex.service.OnboardingService;
 import ru.neoflex.service.WorkoutService;
-import static ru.neoflex.util.BotResponseUtils.sendButtons;
-
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import static ru.neoflex.util.BotResponseUtils.*;
 
 @Component
@@ -29,7 +23,7 @@ public class CallbackQueryHandler {
     private final WorkoutPaginationHandler workoutPaginationHandler;
     private final WorkoutEditHandler workoutEditHandler;
     private final NutritionCommandHandler nutritionCommandHandler;
-
+    private final WaterCommandHandler waterCommandHandler;
 
     public void handle(Update update) {
         String data = update.getCallbackQuery().getData();
@@ -41,7 +35,6 @@ public class CallbackQueryHandler {
             workoutEditHandler.handleEditRequest(update, workoutId);
             return;
         }
-
 
         if (data.startsWith("delete_")) {
             Long workoutId = Long.parseLong(data.replace("delete_", ""));
@@ -67,7 +60,6 @@ public class CallbackQueryHandler {
             sendText(chatId, "❌ Удаление отменено.");
         }
 
-
         if (data.startsWith("confirm_delete_")) {
             Long workoutId = Long.parseLong(data.replace("confirm_delete_", ""));
             workoutService.deleteWorkout(workoutId);
@@ -79,7 +71,6 @@ public class CallbackQueryHandler {
             sendText(chatId, "❌ Удаление отменено.");
             return;
         }
-
 
         if (data.startsWith("gender_")) {
             handleGenderCallback(chatId, data);
@@ -98,7 +89,9 @@ public class CallbackQueryHandler {
             int page = Integer.parseInt(data.replace("page_", ""));
             workoutPaginationHandler.handleListCommand(update, page);
         }
-
+        if (data.startsWith("WATER_")) {
+            waterCommandHandler.handleCallback(chatId, data);
+        }
     }
 
     private void handleGenderCallback(long chatId, String data) {

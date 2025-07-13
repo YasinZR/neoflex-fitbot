@@ -24,6 +24,9 @@ public class User {
     @Column(nullable = false)
     private OnboardingStep onboardingStep;
 
+    @Column(name = "daily_water_goal")
+    private Integer dailyWaterGoal;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private CalculatorProfile calculatorProfile;
 }

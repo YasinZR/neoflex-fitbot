@@ -39,11 +39,11 @@ public class NutritionCommandHandler {
     public void handleTextStep(Update update) {
         long chatId = update.getMessage().getChatId();
         String text = update.getMessage().getText();
-        User user = onboardingService.getUserByTelegramId(chatId);
-
 
         PartialMeal buffer = mealBuffer.get(chatId);
         if (buffer == null) return;
+
+        User user = onboardingService.getUserByTelegramId(chatId);
 
         switch (buffer.getCurrentStep()) {
             case TYPE -> {
