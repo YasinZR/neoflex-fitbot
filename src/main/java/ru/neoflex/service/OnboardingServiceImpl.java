@@ -32,17 +32,19 @@ public class OnboardingServiceImpl implements OnboardingService {
     @Transactional
     @Override
     public void startOnboarding(Long telegramId) {
-        User user = userRepository.findByTelegramId(telegramId)
-                .orElseGet(() -> User.builder()
-                        .telegramId(telegramId)
-                        .profileComplete(false)
-                        .onboardingStep(OnboardingStep.GENDER)
-                        .build());
+        User user = userRepository.findByTelegramId(telegramId).orElse(null);
+
+        if (user == null) {
+            user = User.builder()
+                    .telegramId(telegramId)
+                    .profileComplete(false)
+                    .onboardingStep(OnboardingStep.GENDER)
+                    .build();
+        }
 
         user.setOnboardingStep(OnboardingStep.GENDER);
         user.setProfileComplete(false);
 
-        // Создаём пустой профиль, если его ещё нет
         if (user.getCalculatorProfile() == null) {
             CalculatorProfile profile = new CalculatorProfile();
             profile.setUser(user);
@@ -51,6 +53,7 @@ public class OnboardingServiceImpl implements OnboardingService {
 
         userRepository.save(user);
     }
+
 
     @Transactional
     @Override

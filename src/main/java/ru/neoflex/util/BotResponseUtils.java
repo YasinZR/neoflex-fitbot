@@ -68,5 +68,13 @@ public class BotResponseUtils {
 
     }
 
+    public static InlineKeyboardButton button(String text, String callbackData) {
+        return InlineKeyboardButton.builder()
+                .text(text)
+                .callbackData(callbackData)
+                .build();
+    }
+
+
 
 }

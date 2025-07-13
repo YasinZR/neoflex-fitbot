@@ -8,6 +8,8 @@ import ru.neoflex.config.BotConfig;
 import ru.neoflex.handler.*;
 import ru.neoflex.util.BotResponseUtils;
 
+import static ru.neoflex.util.BotResponseUtils.sendText;
+
 @Slf4j
 @Component
 public class NeoflexFitBot extends TelegramLongPollingBot {
@@ -19,6 +21,7 @@ public class NeoflexFitBot extends TelegramLongPollingBot {
     private final WorkoutPaginationHandler workoutPaginationHandler;
     private final WorkoutEditHandler workoutEditHandler;
     private final NutritionCommandHandler nutritionCommandHandler;
+    private final WaterCommandHandler waterCommandHandler;
     private Long extractId(String messageText) {
         try {
             String[] parts = messageText.split(" ");
@@ -29,15 +32,14 @@ public class NeoflexFitBot extends TelegramLongPollingBot {
         return null;
     }
 
-
-
     public NeoflexFitBot(BotConfig config,
                          TextMessageHandler textMessageHandler,
                          CallbackQueryHandler callbackQueryHandler,
                          WorkoutCommandHandler workoutCommandHandler,
                          WorkoutEditHandler workoutEditHandler,
                          NutritionCommandHandler nutritionCommandHandler,
-                         WorkoutPaginationHandler workoutPaginationHandler) {
+                         WorkoutPaginationHandler workoutPaginationHandler,
+                         WaterCommandHandler waterCommandHandler) {
         this.config = config;
         this.textMessageHandler = textMessageHandler;
         this.callbackQueryHandler = callbackQueryHandler;
@@ -45,9 +47,9 @@ public class NeoflexFitBot extends TelegramLongPollingBot {
         this.workoutPaginationHandler = workoutPaginationHandler;
         this.workoutEditHandler = workoutEditHandler;
         this.nutritionCommandHandler = nutritionCommandHandler;
+        this.waterCommandHandler = waterCommandHandler;
         BotResponseUtils.init(this);
     }
-
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -63,22 +65,30 @@ public class NeoflexFitBot extends TelegramLongPollingBot {
             } else if (messageText.equals("/addMeal")) {
                 nutritionCommandHandler.handleAddMeal(update);
                 return;
-            }else if (messageText.equals("/todayMeals")) {
+            } else if (messageText.equals("/todayMeals")) {
                 nutritionCommandHandler.handleTodayMeals(update);
                 return;
-            }
-            else if (messageText.equals("/weekMeals")) {
+            } else if (messageText.equals("/weekMeals")) {
                 nutritionCommandHandler.handleWeekMeals(update);
                 return;
-            }
-            else if (messageText.startsWith("/editMeal")) {
+            } else if (messageText.equals("/waterStats")) {
+                waterCommandHandler.handleWaterStats(update);
+                return;
+            } else if (messageText.startsWith("/setWaterGoal")) {
+                try {
+                    int goal = Integer.parseInt(messageText.replace("/setWaterGoal", "").trim());
+                    waterCommandHandler.handleSetWaterGoal(update, goal);
+                } catch (NumberFormatException e) {
+                    sendText(update.getMessage().getChatId(), "Введите число после команды. Например: /setWaterGoal 2500");
+                }
+                return;
+            } else if (messageText.startsWith("/editMeal")) {
                 Long id = extractId(messageText);
                 if (id != null) {
                     nutritionCommandHandler.handleEditMeal(update, id);
                 }
                 return;
-            }
-            else if (messageText.startsWith("/delMeal")) {
+            } else if (messageText.startsWith("/delMeal")) {
                 Long id = extractId(messageText);
                 if (id != null) {
                     nutritionCommandHandler.handleDeleteMeal(update, id);
@@ -86,20 +96,16 @@ public class NeoflexFitBot extends TelegramLongPollingBot {
                 return;
             }
 
-
             workoutCommandHandler.handleTextStep(update);
             workoutEditHandler.handleTextStep(update);
             nutritionCommandHandler.handleTextStep(update);
+            waterCommandHandler.handleCustomVolume(update);
             textMessageHandler.handle(update);
-
-
-
 
         } else if (update.hasCallbackQuery()) {
             callbackQueryHandler.handle(update);
         }
     }
-
 
 
     @Override
