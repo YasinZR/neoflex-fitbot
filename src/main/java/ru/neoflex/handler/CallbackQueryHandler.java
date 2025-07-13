@@ -6,11 +6,15 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import ru.neoflex.model.NutritionEntry;
 import ru.neoflex.model.enums.OnboardingStep;
 import ru.neoflex.service.OnboardingService;
 import ru.neoflex.service.WorkoutService;
+import static ru.neoflex.util.BotResponseUtils.sendButtons;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static ru.neoflex.util.BotResponseUtils.*;
 
@@ -24,6 +28,7 @@ public class CallbackQueryHandler {
     private final WorkoutService workoutService;
     private final WorkoutPaginationHandler workoutPaginationHandler;
     private final WorkoutEditHandler workoutEditHandler;
+    private final NutritionCommandHandler nutritionCommandHandler;
 
 
     public void handle(Update update) {
@@ -54,6 +59,14 @@ public class CallbackQueryHandler {
                     .build());
             return;
         }
+
+        if (data.startsWith("CONFIRM_DEL_MEAL:")) {
+            Long mealId = Long.parseLong(data.replace("CONFIRM_DEL_MEAL:", ""));
+            nutritionCommandHandler.confirmDeleteMeal(chatId, mealId);
+        } else if (data.equals("CANCEL_DEL_MEAL")) {
+            sendText(chatId, "❌ Удаление отменено.");
+        }
+
 
         if (data.startsWith("confirm_delete_")) {
             Long workoutId = Long.parseLong(data.replace("confirm_delete_", ""));

@@ -18,6 +18,16 @@ public class NeoflexFitBot extends TelegramLongPollingBot {
     private final WorkoutCommandHandler workoutCommandHandler;
     private final WorkoutPaginationHandler workoutPaginationHandler;
     private final WorkoutEditHandler workoutEditHandler;
+    private final NutritionCommandHandler nutritionCommandHandler;
+    private Long extractId(String messageText) {
+        try {
+            String[] parts = messageText.split(" ");
+            if (parts.length > 1) return Long.parseLong(parts[1]);
+        } catch (Exception e) {
+            // ignore
+        }
+        return null;
+    }
 
 
 
@@ -26,6 +36,7 @@ public class NeoflexFitBot extends TelegramLongPollingBot {
                          CallbackQueryHandler callbackQueryHandler,
                          WorkoutCommandHandler workoutCommandHandler,
                          WorkoutEditHandler workoutEditHandler,
+                         NutritionCommandHandler nutritionCommandHandler,
                          WorkoutPaginationHandler workoutPaginationHandler) {
         this.config = config;
         this.textMessageHandler = textMessageHandler;
@@ -33,6 +44,7 @@ public class NeoflexFitBot extends TelegramLongPollingBot {
         this.workoutCommandHandler = workoutCommandHandler;
         this.workoutPaginationHandler = workoutPaginationHandler;
         this.workoutEditHandler = workoutEditHandler;
+        this.nutritionCommandHandler = nutritionCommandHandler;
         BotResponseUtils.init(this);
     }
 
@@ -48,11 +60,39 @@ public class NeoflexFitBot extends TelegramLongPollingBot {
             } else if (messageText.equals("/listWorkouts")) {
                 workoutPaginationHandler.handleListCommand(update, 0);
                 return;
-            } else {
-                workoutCommandHandler.handleTextStep(update);
-                workoutEditHandler.handleTextStep(update); // добавь это
-                textMessageHandler.handle(update);
+            } else if (messageText.equals("/addMeal")) {
+                nutritionCommandHandler.handleAddMeal(update);
+                return;
+            }else if (messageText.equals("/todayMeals")) {
+                nutritionCommandHandler.handleTodayMeals(update);
+                return;
             }
+            else if (messageText.equals("/weekMeals")) {
+                nutritionCommandHandler.handleWeekMeals(update);
+                return;
+            }
+            else if (messageText.startsWith("/editMeal")) {
+                Long id = extractId(messageText);
+                if (id != null) {
+                    nutritionCommandHandler.handleEditMeal(update, id);
+                }
+                return;
+            }
+            else if (messageText.startsWith("/delMeal")) {
+                Long id = extractId(messageText);
+                if (id != null) {
+                    nutritionCommandHandler.handleDeleteMeal(update, id);
+                }
+                return;
+            }
+
+
+            workoutCommandHandler.handleTextStep(update);
+            workoutEditHandler.handleTextStep(update);
+            nutritionCommandHandler.handleTextStep(update);
+            textMessageHandler.handle(update);
+
+
 
 
         } else if (update.hasCallbackQuery()) {
