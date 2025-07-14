@@ -22,6 +22,7 @@ public class NeoflexFitBot extends TelegramLongPollingBot {
     private final WorkoutEditHandler workoutEditHandler;
     private final NutritionCommandHandler nutritionCommandHandler;
     private final WaterCommandHandler waterCommandHandler;
+    private final MainMenuHandler mainMenuHandler;
     private Long extractId(String messageText) {
         try {
             String[] parts = messageText.split(" ");
@@ -39,7 +40,9 @@ public class NeoflexFitBot extends TelegramLongPollingBot {
                          WorkoutEditHandler workoutEditHandler,
                          NutritionCommandHandler nutritionCommandHandler,
                          WorkoutPaginationHandler workoutPaginationHandler,
-                         WaterCommandHandler waterCommandHandler) {
+                         WaterCommandHandler waterCommandHandler,
+                         MainMenuHandler mainMenuHandler // <== добавлено
+    ) {
         this.config = config;
         this.textMessageHandler = textMessageHandler;
         this.callbackQueryHandler = callbackQueryHandler;
@@ -48,8 +51,11 @@ public class NeoflexFitBot extends TelegramLongPollingBot {
         this.workoutEditHandler = workoutEditHandler;
         this.nutritionCommandHandler = nutritionCommandHandler;
         this.waterCommandHandler = waterCommandHandler;
+        this.mainMenuHandler = mainMenuHandler; // <== добавлено
+
         BotResponseUtils.init(this);
     }
+
 
     @Override
     public void onUpdateReceived(Update update) {

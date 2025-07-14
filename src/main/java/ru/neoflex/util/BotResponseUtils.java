@@ -75,6 +75,15 @@ public class BotResponseUtils {
                 .build();
     }
 
+    public static void sendTextWithButtons(Long chatId, String text, Map<String, String> buttons) {
+        List<List<InlineKeyboardButton>> keyboard = buttons.entrySet().stream()
+                .map(entry -> List.of(button(entry.getKey(), entry.getValue())))
+                .toList();
 
+        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
+                .keyboard(keyboard)
+                .build();
 
+        sendTextWithKeyboard(chatId, text, markup);
+    }
 }

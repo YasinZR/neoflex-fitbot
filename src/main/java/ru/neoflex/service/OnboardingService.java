@@ -13,5 +13,7 @@ public interface OnboardingService {
     void saveActivityLevel(Long telegramId, String level);
     void saveGoal(Long telegramId, String goal);
     User getUserByTelegramId(Long telegramId);
+    void completeOnboarding(Long telegramId);
+    void calculateAndShowCalories(Long chatId);
 
 }
