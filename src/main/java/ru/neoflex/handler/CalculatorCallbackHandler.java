@@ -2,9 +2,8 @@ package ru.neoflex.handler;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.neoflex.service.OnboardingService;
-import ru.neoflex.handler.MainMenuHandler;
+
 
 import static ru.neoflex.util.BotResponseUtils.sendText;
 

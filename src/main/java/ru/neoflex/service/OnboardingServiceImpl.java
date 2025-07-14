@@ -115,7 +115,6 @@ public class OnboardingServiceImpl implements OnboardingService {
     }
 
 
-    // Приватный метод для безопасного получения или создания CalculatorProfile
     private CalculatorProfile getOrCreateProfile(User user) {
         CalculatorProfile profile = user.getCalculatorProfile();
         if (profile == null) {

@@ -25,12 +25,25 @@ public class CallbackQueryHandler {
     private final NutritionCommandHandler nutritionCommandHandler;
     private final WaterCommandHandler waterCommandHandler;
     private final CalculatorCallbackHandler calculatorCallbackHandler;
+    private final MainMenuCallbackHandler mainMenuCallbackHandler;
+    private final NavigationButtonHandler navigationButtonHandler;
+
 
 
     public void handle(Update update) {
         String data = update.getCallbackQuery().getData();
         long chatId = update.getCallbackQuery().getMessage().getChatId();
         String userName = update.getCallbackQuery().getFrom().getFirstName();
+
+        if (data.startsWith("MENU_")) {
+            mainMenuCallbackHandler.handle(update.getCallbackQuery());
+            return;
+        }
+            
+        if (data.equals("NAV_BACK") || data.equals("NAV_MENU")) {
+            navigationButtonHandler.handle(update.getCallbackQuery());
+            return;
+        }
 
         if (data.startsWith("edit_")) {
             Long workoutId = Long.parseLong(data.replace("edit_", ""));

@@ -7,8 +7,8 @@ import ru.neoflex.model.NutritionEntry;
 import ru.neoflex.model.User;
 import ru.neoflex.service.NutritionService;
 import ru.neoflex.service.OnboardingService;
+import ru.neoflex.util.NavigationMarkupFactory;
 
-import static ru.neoflex.util.BotResponseUtils.sendButtons;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static ru.neoflex.util.BotResponseUtils.sendText;
+import static ru.neoflex.util.BotResponseUtils.*;
 
 @Component
 @RequiredArgsConstructor
@@ -86,9 +86,8 @@ public class NutritionCommandHandler {
                                 .build();
 
                         nutritionService.updateMeal(updated);
-                        sendText(chatId, "✅ Приём пищи обновлён!");
+                        sendTextWithKeyboard(chatId, "✅ Приём пищи обновлён!", NavigationMarkupFactory.navigationMarkup());
                     } else {
-                        // добавление нового
                         NutritionEntry entry = NutritionEntry.builder()
                                 .user(user)
                                 .mealType(buffer.getMealType())
@@ -97,9 +96,8 @@ public class NutritionCommandHandler {
                                 .carbs(buffer.getCarbs())
                                 .timestamp(LocalDateTime.now())
                                 .build();
-
                         nutritionService.addMeal(entry);
-                        sendText(chatId, "🍽 Приём пищи сохранён!");
+                        sendTextWithKeyboard(chatId, "🍽 Приём пищи сохранён!", NavigationMarkupFactory.navigationMarkup());
                     }
 
                     mealBuffer.remove(chatId);

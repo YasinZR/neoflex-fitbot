@@ -5,11 +5,12 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.neoflex.model.WorkoutLog;
 import ru.neoflex.service.WorkoutService;
+import ru.neoflex.util.NavigationMarkupFactory;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-
+import static ru.neoflex.util.BotResponseUtils.sendTextWithKeyboard;
 import static ru.neoflex.util.BotResponseUtils.sendText;
 
 @Component
@@ -18,7 +19,6 @@ public class WorkoutEditHandler {
 
     private final WorkoutService workoutService;
 
-    // временное хранилище состояния редактирования
     private final Map<Long, EditingState> editBuffer = new ConcurrentHashMap<>();
 
     public void handleEditRequest(Update update, Long workoutId) {
@@ -32,7 +32,6 @@ public class WorkoutEditHandler {
         WorkoutLog workout = optionalWorkout.get();
 
 
-        // сохраняем в буфер
         editBuffer.put(chatId, new EditingState(workoutId, workout, EditField.TYPE));
 
         sendText(chatId, "Редактируем тренировку [" + workoutId + "]. Введите новый *тип* тренировки (текущий: " + workout.getType() + ")");
@@ -65,7 +64,7 @@ public class WorkoutEditHandler {
                     state.workout.setCalories(Integer.parseInt(input));
                     workoutService.updateWorkout(state.workout);
                     editBuffer.remove(chatId);
-                    sendText(chatId, "✅ Тренировка успешно обновлена!");
+                    sendTextWithKeyboard(chatId, "✅ Тренировка успешно обновлена!", NavigationMarkupFactory.navigationMarkup());
                 } catch (NumberFormatException e) {
                     sendText(chatId, "Неверный формат. Введите число.");
                 }
@@ -73,7 +72,6 @@ public class WorkoutEditHandler {
         }
     }
 
-    // внутренние типы
     enum EditField {
         TYPE, DURATION, CALORIES
     }
