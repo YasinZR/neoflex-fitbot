@@ -5,8 +5,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import static ru.neoflex.util.BotResponseUtils.sendTextWithKeyboard;
 
 @Component
 public class MainMenuHandler {
@@ -34,4 +35,28 @@ public class MainMenuHandler {
                 .build();
     }
 
+    public InlineKeyboardMarkup createMainMenuMarkup() {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        List.of(
+                                InlineKeyboardButton.builder().text("🏋️‍♂️ Тренировки").callbackData("workout_menu").build()
+                        ),
+                        List.of(
+                                InlineKeyboardButton.builder().text("🍽 Питание").callbackData("nutrition_menu").build()
+                        ),
+                        List.of(
+                                InlineKeyboardButton.builder().text("💧 Вода").callbackData("WATER_MENU").build()
+                        )
+                ))
+                .build();
+    }
+
+
+    public void showMenu(long chatId) {
+        sendTextWithKeyboard(
+                chatId,
+                "🔥 Отлично! Я твой персональный помощник по здоровью и спорту.\nВыбери, что тебя интересует:",
+                createMainMenuMarkup()
+        );
+    }
 }

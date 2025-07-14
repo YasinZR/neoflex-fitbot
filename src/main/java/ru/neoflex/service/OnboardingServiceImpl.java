@@ -9,12 +9,18 @@ import ru.neoflex.model.User;
 import ru.neoflex.repository.CalculatorProfileRepository;
 import ru.neoflex.repository.UserRepository;
 
+import java.util.Map;
+
+import static ru.neoflex.util.BotResponseUtils.sendTextWithButtons;
+
 @Service
 @RequiredArgsConstructor
 public class OnboardingServiceImpl implements OnboardingService {
 
     private final UserRepository userRepository;
     private final CalculatorProfileRepository calculatorProfileRepository;
+    private final CalculatorService calculatorService;
+
 
     private void handleStep(Long telegramId, OnboardingStep nextStep, java.util.function.Consumer<CalculatorProfile> updater) {
         User user = userRepository.findByTelegramId(telegramId)
@@ -124,6 +130,45 @@ public class OnboardingServiceImpl implements OnboardingService {
     public User getUserByTelegramId(Long telegramId) {
         return userRepository.findByTelegramId(telegramId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    @Override
+    @Transactional
+    public void completeOnboarding(Long telegramId) {
+        User user = userRepository.findByTelegramId(telegramId)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + telegramId));
+
+        user.setProfileComplete(true);
+        user.setOnboardingStep(OnboardingStep.COMPLETE);
+        userRepository.save(user);
+    }
+
+    public void calculateAndShowCalories(Long chatId) {
+        User user = userRepository.findByTelegramId(chatId)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        CalculatorProfile profile = calculatorProfileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Профиль не найден"));
+
+        double calories = calculatorService.calculateCalories(
+                profile.getGender(),
+                profile.getAge(),
+                profile.getWeight(),
+                profile.getHeight(),
+                profile.getActivityLevel(),
+                profile.getGoal()
+        );
+
+        Map<String, String> buttons = Map.of(
+                "✅ Сохранить в профиль", "SAVE_CALC_PROFILE",
+                "❌ Отменить", "CANCEL_CALC_PROFILE"
+        );
+
+        sendTextWithButtons(
+                chatId,
+                "🔥 Твоя суточная потребность: *" + (int) calories + "* ккал",
+                buttons
+        );
     }
 
 

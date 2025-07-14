@@ -24,6 +24,8 @@ public class CallbackQueryHandler {
     private final WorkoutEditHandler workoutEditHandler;
     private final NutritionCommandHandler nutritionCommandHandler;
     private final WaterCommandHandler waterCommandHandler;
+    private final CalculatorCallbackHandler calculatorCallbackHandler;
+
 
     public void handle(Update update) {
         String data = update.getCallbackQuery().getData();
@@ -91,6 +93,10 @@ public class CallbackQueryHandler {
         }
         if (data.startsWith("WATER_")) {
             waterCommandHandler.handleCallback(chatId, data);
+        }
+        if (data.equals("SAVE_CALC_PROFILE") || data.equals("CANCEL_CALC_PROFILE")) {
+            calculatorCallbackHandler.handle(chatId, data);
+            return;
         }
     }
 
@@ -175,9 +181,8 @@ public class CallbackQueryHandler {
         };
         if (goal != null) {
             onboardingService.saveGoal(chatId, goal);
-            onboardingService.saveOnboardingStep(chatId, OnboardingStep.COMPLETE);
-            sendText(chatId,"✅ Профиль сохранён! Вот твоё главное меню:");
-            executeSafe(mainMenuHandler.createMainMenu(chatId, userName));
+            onboardingService.calculateAndShowCalories(chatId);
+
         }
     }
 }
