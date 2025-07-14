@@ -7,7 +7,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import ru.neoflex.model.User;
 import ru.neoflex.service.OnboardingService;
 import ru.neoflex.service.WaterService;
-
+import ru.neoflex.util.NavigationMarkupFactory;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +98,7 @@ public class WaterCommandHandler {
                 sendText(chatId, "Объём должен быть положительным числом.");
                 return;
             }
-            sendText(chatId, "✅ Добавлено " + volume + " мл воды.");
+            sendTextWithKeyboard(chatId, "✅ Добавлено " + volume + " мл воды.", NavigationMarkupFactory.navigationMarkup());
             pendingCustomVolume.remove(chatId); // сбрасываем флаг
         } catch (NumberFormatException e) {
             sendText(chatId, "Введите корректное число, например: 250");

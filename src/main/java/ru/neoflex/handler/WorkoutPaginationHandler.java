@@ -55,7 +55,6 @@ public class WorkoutPaginationHandler {
                     w.getTimestamp().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))));
         }
 
-        // Кнопки
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
         for (WorkoutLog w : pageItems) {
             List<InlineKeyboardButton> row = List.of(
@@ -65,7 +64,6 @@ public class WorkoutPaginationHandler {
             keyboard.add(row);
         }
 
-        // Навигация
         List<InlineKeyboardButton> navigation = new ArrayList<>();
         if (page > 0)
             navigation.add(InlineKeyboardButton.builder().text("⬅").callbackData("page_" + (page - 1)).build());
@@ -73,6 +71,12 @@ public class WorkoutPaginationHandler {
             navigation.add(InlineKeyboardButton.builder().text("➡").callbackData("page_" + (page + 1)).build());
         if (!navigation.isEmpty())
             keyboard.add(navigation);
+        keyboard.add(
+                List.of(
+                        InlineKeyboardButton.builder().text("🏠 Главное меню").callbackData("NAV_MENU").build()
+                )
+        );
+
 
         executeSafe(SendMessage.builder()
                 .chatId(String.valueOf(chatId))

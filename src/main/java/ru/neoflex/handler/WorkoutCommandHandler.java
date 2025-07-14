@@ -7,12 +7,14 @@ import ru.neoflex.model.User;
 import ru.neoflex.model.WorkoutLog;
 import ru.neoflex.service.OnboardingService;
 import ru.neoflex.service.WorkoutService;
+import ru.neoflex.util.NavigationMarkupFactory;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static ru.neoflex.util.BotResponseUtils.sendText;
+import static ru.neoflex.util.BotResponseUtils.sendTextWithKeyboard;
 
 @Component
 @RequiredArgsConstructor
@@ -20,8 +22,6 @@ public class WorkoutCommandHandler {
 
     private final WorkoutService workoutService;
     private final OnboardingService onboardingService;
-
-    // временное хранилище для состояния ввода тренировки
     private final Map<Long, PartialWorkout> workoutBuffer = new ConcurrentHashMap<>();
 
     public void handleAddWorkout(Update update) {
@@ -66,8 +66,7 @@ public class WorkoutCommandHandler {
                             .build();
 
                     workoutService.addWorkout(workout);
-                    sendText(chatId, "Тренировка сохранена!");
-
+                    sendTextWithKeyboard(chatId, "Тренировка сохранена!", NavigationMarkupFactory.navigationMarkup());
                     workoutBuffer.remove(chatId);
                 } catch (NumberFormatException e) {
                     sendText(chatId, "Неверный формат. Введите число, например: 300");
